@@ -1,11 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
+﻿using LabChainOfResponisbility.Domain.DTO;
+using LabChainOfResponisbility.Domain.Repositorios;
+using LabChainOfResponisbility.Domain.Servicos;
+using System;
 using System.Threading.Tasks;
 
 namespace LabChainOfResponisbility.Application
 {
-    public class TarefaConferenciaAplicacao
+    public class TarefaConferenciaAplicacao : ITarefaConferenciaAplicacao
     {
         private readonly IRepositorioConfiguracao _repositorioConfiguracao;
         private readonly ITarefaConferenciaServico _tarefaConferenciaServico;
@@ -45,6 +46,8 @@ namespace LabChainOfResponisbility.Application
                 }
             }
 
+            Console.WriteLine("Não encontrou necessidade de criação de tarefa de conferencia, palete ok!");
+
             _servicoMensageria.EnfileirarMensagem(new PaleteEstaConforme(dto.IdPalete,
                 dto.IdArmazem,
                 dto.NumeroDocumento,
@@ -60,7 +63,8 @@ namespace LabChainOfResponisbility.Application
 
         private Task Commit()
         {
-            throw new NotImplementedException();
+            Console.WriteLine("Commited transaction.");
+            return Task.CompletedTask;
         }
     }
 }

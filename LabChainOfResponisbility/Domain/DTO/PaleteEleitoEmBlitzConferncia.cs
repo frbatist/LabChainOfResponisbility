@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace LabChainOfResponisbility.Application
+namespace LabChainOfResponisbility.Domain.DTO
 {
     public class PaleteEleitoEmBlitzConferncia
     {
