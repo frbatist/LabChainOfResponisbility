@@ -6,14 +6,49 @@ using System.Threading.Tasks;
 
 namespace LabChainOfResponisbility.Application
 {
-    public class TarefaConferenciaAplicacao : ITarefaConferenciaAplicacao
+    public class TarefaConferenciaAplicacaoRefatorado : ITarefaConferenciaAplicacao
     {
         private readonly IRepositorioConfiguracao _repositorioConfiguracao;
         private readonly ITarefaConferenciaServico _tarefaConferenciaServico;
         private readonly IRegraBlitzServico _regraBlitzServico;
         private readonly IServicoMensageria _servicoMensageria;
+        private readonly ICriacaoTarefaFactory _criacaoTarefaFactory;
 
-        public TarefaConferenciaAplicacao(IRepositorioConfiguracao repositorioConfiguracao, ITarefaConferenciaServico tarefaConferenciaServico, IRegraBlitzServico regraBlitzServico, IServicoMensageria servicoMensageria)
+        public TarefaConferenciaAplicacaoRefatorado(IRepositorioConfiguracao repositorioConfiguracao,
+            ITarefaConferenciaServico tarefaConferenciaServico, IRegraBlitzServico regraBlitzServico,
+            IServicoMensageria servicoMensageria, ICriacaoTarefaFactory criacaoTarefaFactory)
+        {
+            _repositorioConfiguracao = repositorioConfiguracao;
+            _tarefaConferenciaServico = tarefaConferenciaServico;
+            _regraBlitzServico = regraBlitzServico;
+            _servicoMensageria = servicoMensageria;
+            _criacaoTarefaFactory = criacaoTarefaFactory;
+        }
+
+        public async Task CriarTarefa(TarefaDto dto)
+        {
+            var criacaoTarefaHandler = _criacaoTarefaFactory.ObterHandler();
+            await criacaoTarefaHandler.Handle(dto);            
+            await Commit();
+        }
+
+        private Task Commit()
+        {
+            Console.WriteLine("Commited transaction.");
+            return Task.CompletedTask;
+        }
+    }
+
+    public class TarefaConferenciaAplicacao : ITarefaConferenciaAplicacao
+    {
+        private readonly IRepositorioConfiguracao _repositorioConfiguracao;
+        private readonly ITarefaConferenciaServico _tarefaConferenciaServico;
+        private readonly IRegraBlitzServico _regraBlitzServico;
+        private readonly IServicoMensageria _servicoMensageria;    
+
+        public TarefaConferenciaAplicacao(IRepositorioConfiguracao repositorioConfiguracao, 
+            ITarefaConferenciaServico tarefaConferenciaServico, IRegraBlitzServico regraBlitzServico, 
+            IServicoMensageria servicoMensageria)
         {
             _repositorioConfiguracao = repositorioConfiguracao;
             _tarefaConferenciaServico = tarefaConferenciaServico;
@@ -39,7 +74,15 @@ namespace LabChainOfResponisbility.Application
                 var tarefaCriada = await _tarefaConferenciaServico.CriarTarefa(dto);
                 if (tarefaCriada)
                 {
-                    _servicoMensageria.EnfileirarMensagem(new PaleteEleitoEmBlitzConferncia(dto.IdPalete, resultadoBlitz.Nome, resultadoBlitz.PercentualSorteio));
+                    _servicoMensageria.EnfileirarMensagem
+                    (
+                        new PaleteEleitoEmBlitzConferncia
+                        (
+                            dto.IdPalete, 
+                            resultadoBlitz.Nome, 
+                            resultadoBlitz.PercentualSorteio
+                        )
+                    );
 
                     await Commit();
                     return;
